@@ -13,11 +13,12 @@
 
 #include <arpa/inet.h>
 #include <iostream>
+#include <sstream>
 #include <chrono>
 #include <ctime>
 #include <unistd.h> // https://linux.die.net/man/2/read
 
-const int BUFF_SIZE = 1024; // バッファのサイズ
+const int BUFF_SIZE = 65536; // バッファのサイズ
 
 int main(int argc, char *argv[])
 {
@@ -58,7 +59,7 @@ int main(int argc, char *argv[])
     
     // ソケットをコネクション受け入れ可能な状態にする。
     // 第２引数は、接続キューのサイズ。５つまで同時接続を受け入れると指定。
-    if (listen(serv_socket, 5) < 0)
+    if (listen(serv_socket, 10) < 0)
     {
         cout << "Filaed to listen to a socket.\n";
         return -1;
@@ -79,24 +80,25 @@ int main(int argc, char *argv[])
         // inet_ntoa(.)は、arpa/inet.hで定義されている（Unix系の場合）。 htons はエンディアンを変換する．
         cout << "Accepted a connection from [" << inet_ntoa(clnt_addr.sin_addr) << "," << htons(clnt_addr.sin_port) << "]" << endl;
 
+        string msg;
 
-		while (true) {
-        	n = read(clnt_socket, buff, sizeof(buff) - 1);
-        	if(n <= 0){
-            	// 相手の通信が切断されている．
-            	break;
-        	}
-        	buff[n] = 0; // 文字列として他の関数に渡す場合は，終端文字を追加することを忘れないように気をつける．
-        	cout << buff << endl;
-        	// time(.)で現在時間取得（秒単位の歴時間）、ctime(.)で文字列に変換し、送信バッファに書き込み。
-        	time(&now);
+    	n = read(clnt_socket, buff, sizeof(buff) - 1);
+    	if(n <= 0){
+        	// 相手の通信が切断されている．
+    	}
+    	else {
+	    	buff[n] = 0; // 文字列として他の関数に渡す場合は，終端文字を追加することを忘れないように気をつける．
+	    	cout << buff << endl;
+	    	// time(.)で現在時間取得（秒単位の歴時間）、ctime(.)で文字列に変換し、送信バッファに書き込み。
+	    	time(&now);
 
-        	string msg = ctime(&now);
-
-        	// クライアントソケットにバッファの内容を書き込む。
-        	n = write(clnt_socket, msg.c_str(), msg.size());
-        }
-
+	    	msg = ctime(&now);
+	    	msg.pop_back();
+	    	msg += " from 小島優希也\n";
+	    	//cout << msg;
+	     	n = write(clnt_socket, msg.c_str(), msg.size());
+	       	//cout << "n = write() = " << n << endl;
+	  	}
         // クライアントとの通信は終了したので、ソケットを閉じる。
         close(clnt_socket);
     }

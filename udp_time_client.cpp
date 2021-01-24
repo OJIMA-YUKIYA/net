@@ -13,6 +13,7 @@
 
 #include <arpa/inet.h>
 #include <iostream>
+#include <fstream>
 #include <chrono>
 #include <ctime>
 #include <unistd.h> // https://linux.die.net/man/2/read
@@ -55,9 +56,10 @@ int main(int argc, char* argv[])
     
     // メッセージ送信．
     string msg;
+    ifstream ifs("../tst.txt");
     while (1) {
     	string tmp_msg;
-    	getline(cin, tmp_msg);
+    	getline(ifs, tmp_msg);
     	if (tmp_msg == "q" || tmp_msg == "quit" || tmp_msg == "exit") {
     		msg.pop_back();
     		break;
@@ -66,13 +68,11 @@ int main(int argc, char* argv[])
     		msg = msg + tmp_msg + '\n';
     	}
     }
+    ifs.close();
+
 
     auto RTT_begin = system_clock::now();//サーバーへ送信する直前の時刻を取得
     n = sendto(socketd, msg.c_str(), msg.size(), 0, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
-    if (n < 0) {
-        cout << "failed to receive a message.\n";
-        return -1;
-    }
 
     
     // サーバから現在時刻を文字列として受信．
@@ -89,6 +89,10 @@ int main(int argc, char* argv[])
     buff[n] = 0; // 終端文字列を追加．送信者が終端文字列を入れてデータを送ってきているとは限らない．
     cout << "Time: " << buff;
     cout << "Round Trip Time: "<<  RTT_time.count() << "秒\n";
+
+    ofstream ofs("../udp_result.csv", ios::app);
+    ofs << RTT_time.count() << endl;
+    ofs.close();
 
     // ソケットを閉じる
     close(socketd);

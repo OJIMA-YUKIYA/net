@@ -12,11 +12,12 @@
 //
 
 #include <arpa/inet.h>
+#include <fstream>
 #include <iostream>
 #include <unistd.h> // https://linux.die.net/man/2/read
 #include <chrono>
 #include <string>
-const int BUFF_SIZE = 1024; // バッファのサイズ
+const int BUFF_SIZE = 1048576; // バッファのサイズ
 
 int main(int argc, char* argv[])
 {
@@ -56,32 +57,41 @@ int main(int argc, char* argv[])
         return -1;
     }
     
-    	//サーバーに送るメッセージmsgをcinで取得
-    	string msg;
-    	while (1) {
-    		string tmp_msg;
-    		getline(cin, tmp_msg);
-    		if (tmp_msg == "q" || tmp_msg == "quit" || tmp_msg == "exit") {
-    			msg.pop_back();
-    			break;
+    //サーバーに送るメッセージmsgをcinで取得
+    string msg;
+    ifstream ifs("../tst.txt");
+    while (1) {
+    	string tmp_msg;
+    	getline(ifs, tmp_msg);
+    	if (tmp_msg == "q" || tmp_msg == "quit" || tmp_msg == "exit") {
+    		if (msg.size() == 0) {
+				break;
     		}
-    		msg = msg + tmp_msg + "\n";
-   		}
-   		auto RTT_begin = system_clock::now();
-    	n = write(socketd, msg.c_str(), msg.size()); // 文字列の送信．第二引数は記憶域．第３引数は送信するByte数．
+    		msg.pop_back();
+    		break;
+    	}
+    	msg = msg + tmp_msg + "\n";
+   	}
+   	auto RTT_begin = system_clock::now();
+    n = write(socketd, msg.c_str(), msg.size()); // 文字列の送信．第二引数は記憶域．第３引数は送信するByte数．
+    //cout << "n = write() = " << n << endl;
     	// 接続すると，サーバは現在時刻を文字列として返信する．
     	// read(.)により，データを受信する．
-    	n = read(socketd, buff, sizeof(buff)-1);
-    	auto RTT_end = system_clock::now();
-    	duration<double> RTT_time = RTT_end - RTT_begin;
-    	if (n < 0) {
-        	cout << "failed to read from a socket\n";
-        	return -1;
-    	}
-    	buff[n] = 0;
-    	// サーバからの返信された文字列（現在時刻）を表示
-    	cout << "Time: " <<  buff;
-    	cout << "Round Trip Time: " << RTT_time.count() << " seconds\n"; 
-    // close the socket
+	n = read(socketd, buff, sizeof(buff)-1);
+	auto RTT_end = system_clock::now();
+	duration<double> RTT_time = RTT_end - RTT_begin;
+	cout << "n = read() = " << n << endl;
+	if (n == -1) {
+    	cout << "failed to read from a socket\n";
+    	close(socketd);
+    	return -1;
+	}
+	buff[n] = 0;
+	// サーバからの返信された文字列（現在時刻）を表示
+	cout << "Time: " <<  buff;
+	cout << "Round Trip Time: " << RTT_time.count() << " seconds\n";
+	ofstream ofs("../tcp_result.csv", ios::app);
+	ofs << RTT_time.count() << endl;
     close(socketd);
+    return 0;
 }

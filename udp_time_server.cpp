@@ -17,7 +17,7 @@
 #include <ctime>
 #include <unistd.h> // https://linux.die.net/man/2/read
 
-const int BUFF_SIZE = 64; // バッファのサイズ
+const int BUFF_SIZE = 1048576; // バッファのサイズ
 
 /*
  * UDP Daytimeサーバ.
@@ -68,6 +68,9 @@ int main(int argc, char* argv[])
         }
 
         cout << "[IP アドレス: " << inet_ntoa(clnt_addr.sin_addr) << ", ポート番号: " << htons(clnt_addr.sin_port) << "] から以下のメッセージを受信しました." << endl;
+        if (n == BUFF_SIZE) {
+        	cout << "Warning!!: 送信された文字数が多いため途中までしか表示されません" << endl;
+        }
         buff[n] = '\0';//終端文字列を追加　必ずしも送信者が終端文字を入れているとは限らない。
 		cout << buff << "\n";
 
@@ -76,7 +79,7 @@ int main(int argc, char* argv[])
         //クライアントに送信するメッセージmsgを作成
         string msg = ctime(&now); // string クラスは加算演算子で文字列を結合可能．
         msg.pop_back();
-        msg += string(" from 小島優希也");
+        msg += string(" from 小島優希也\n");
 
         // 現在時刻を文字列として，クライアントに送信する．
         n = sendto(serv_socket, msg.c_str(), msg.size(), 0, (struct sockaddr*)&clnt_addr, sizeof(clnt_addr));
