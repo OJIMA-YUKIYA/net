@@ -83,6 +83,7 @@ int main(int argc, char *argv[])
         string msg;
 
     	n = read(clnt_socket, buff, sizeof(buff) - 1);
+    	cout << "n = read() = " << n << endl;
     	if(n <= 0){
         	// 相手の通信が切断されている．
     	}
