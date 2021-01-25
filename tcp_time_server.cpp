@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 
 	    	msg = ctime(&now);
 	    	msg.pop_back();
-	    	msg += " from 小島優希也\n";
+	    	msg += " from 小島のTCP server\n";
 	    	//cout << msg;
 	     	n = write(clnt_socket, msg.c_str(), msg.size());
 	       	//cout << "n = write() = " << n << endl;

@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
         //クライアントに送信するメッセージmsgを作成
         string msg = ctime(&now); // string クラスは加算演算子で文字列を結合可能．
         msg.pop_back();
-        msg += string(" from 小島優希也\n");
+        msg += string(" from 小島のUDPタイムサーバー\n");
 
         // 現在時刻を文字列として，クライアントに送信する．
         n = sendto(serv_socket, msg.c_str(), msg.size(), 0, (struct sockaddr*)&clnt_addr, sizeof(clnt_addr));

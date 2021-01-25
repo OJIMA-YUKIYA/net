@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
     ifstream ifs("../tst.txt");
     while (1) {
     	string tmp_msg;
-    	getline(ifs, tmp_msg);
+    	getline(cin, tmp_msg);
     	if (tmp_msg == "q" || tmp_msg == "quit" || tmp_msg == "exit") {
     		msg.pop_back();
     		break;
@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
 
     ofstream ofs("../udp_result.csv", ios::app);
     ofs << RTT_time.count() << endl;
-    ofs.close();
+   	ofs.close();
 
     // ソケットを閉じる
     close(socketd);
