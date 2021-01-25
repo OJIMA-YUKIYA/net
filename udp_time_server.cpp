@@ -62,6 +62,7 @@ int main(int argc, char* argv[])
         cout << "クライアントからのメッセージを待っています...\n";
         addr_len = sizeof(clnt_addr);
         n = recvfrom(serv_socket, buff, BUFF_SIZE, 0, (struct sockaddr*)&clnt_addr, &addr_len);
+        cout << "n = recvfrom() = " << n << endl;
         if (n < 0) {
             cout << "failed to read a query from the socket.\n";
             return -1;

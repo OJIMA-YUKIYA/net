@@ -12,7 +12,7 @@
 #include <sstream>
 
 
-const int BUFF_SIZE = 128; // 一時記憶の長さ
+const int BUFF_SIZE = 256; // 一時記憶の長さ
 
 int main(int argc, char *argv[])
 {
@@ -59,21 +59,53 @@ int main(int argc, char *argv[])
     char buff[BUFF_SIZE];
     int n; // read の戻り値格納用変数
 
-    
-    while (1) {
-    	ope = "1SAUYKj";
-    	string tmp_ope;
-    	getline(cin, tmp_ope);
-    	ope += tmp_ope + "\n";
-    	write(socketd, ope.c_str(), ope.size());
-    	n = read(socketd, buff, BUFF_SIZE - 1);
-    	if (n < 0) {
-  			cout << "failed to read from a socket\n";
-        	return -1;
+	cout << "送信を行う場合はsを入力し, 受信を行う場合はrを入力してください. >> ";
+	string sr;
+	cin >> sr;
+	while (1) {
+		if (sr != "s" && sr != "r") {
+			cout << "sまたはrを入力してください>> ";
+			cin >> sr;
+		}
+		else {
+			break;
+		}
+	}
+    cout << "ユーザー名を入力してください. >> ";
+    string username;
+    cin >> username;
+    ope = "1SAUYKj";
+    if (sr == "s") {
+    	cout << "宛名を入力してください. all を入力した場合は全員になります. >> ";
+    	string toname;
+    	cin >> toname;
+    	cout << "伝言を入力してください. >> ";
+    	string msg;
+    	while (1) {
+    		string tmp_msg;
+    		getline(cin, tmp_msg);
+    		if (tmp_msg == "q" || tmp_msg == "quit" || tmp_msg == "exit") {
+    			msg.pop_back();
+    			break;
+    		}
+    		msg = msg + tmp_msg + "\n";
     	}
-    	buff[n] = 0;
-    	cout << buff;
+    	ope = ope + "send-to \"" + username + "\" \"" + toname + "\" \"" + msg + "\"\n";
     }
+    else {
+    	cout << "誰からのメッセージを受け取りますか? >> ";
+    	string fromname;
+    	cin >> fromname;
+    	ope = ope + "get-from \"" + username + "\" \"" + fromname + "\"\n";
+    }
+    write(socketd, ope.c_str(), ope.size());
+    n = read(socketd, buff, BUFF_SIZE - 1);
+    if (n < 0) {
+  		cout << "failed to read from a socket\n";
+        return -1;
+    }
+    buff[n] = 0;
+    cout << '\n' <<  buff;
     
     close(socketd);
 }

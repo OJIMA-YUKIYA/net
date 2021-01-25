@@ -18,7 +18,7 @@
 #include <ctime>
 #include <unistd.h> // https://linux.die.net/man/2/read
 
-const int BUFF_SIZE = 65536; // バッファのサイズ
+const int BUFF_SIZE = 1048576; // バッファのサイズ
 
 int main(int argc, char *argv[])
 {

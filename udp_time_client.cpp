@@ -59,7 +59,8 @@ int main(int argc, char* argv[])
     ifstream ifs("../tst.txt");
     while (1) {
     	string tmp_msg;
-    	getline(cin, tmp_msg);
+    	//getline(cin, tmp_msg);
+    	getline(ifs, tmp_msg);
     	if (tmp_msg == "q" || tmp_msg == "quit" || tmp_msg == "exit") {
     		msg.pop_back();
     		break;

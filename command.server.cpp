@@ -1,3 +1,5 @@
+
+
 //
 // 東京都立大学 情報科学科
 // 助教・柴田祐樹
@@ -12,7 +14,7 @@
 using namespace std;
 
 const int BUFF_SIZE = 128; // 一時記憶の長さ
-const int MAX_TABLE_SIZE = 100;
+const int MAX_TABLE_SIZE = 256;
 
 int TABLE_SIZE = 0;
 
@@ -20,6 +22,7 @@ struct Table {
 	string msg;
 	string from;
 	string to;
+	time_t time;
 };
 
 int main(int argc, char *argv[])
@@ -69,29 +72,30 @@ int main(int argc, char *argv[])
         int state = 0;
         bool escape = false;
         
-        while (1) {
-        	time(&now);
-        	cout << "state: " << state << ", waiting for messages..\n"; // 現在の状態を確認する
-       		int n = read(clnt_socket, buff, BUFF_SIZE - 1);
-        	if (n <= 0) // 0は相手が接続を遮断したこと，負の値は接続に不具合が生じたことを意味する．正の値は受信に成功したことを意味する．
-        	{
-          		break;
-        	}
-        	buff[n] = 0;
+        
+        time(&now);
+        cout << "state: " << state << ", waiting for messages..\n"; // 現在の状態を確認する
+       	int n = read(clnt_socket, buff, BUFF_SIZE - 1);
+        if (n <= 0) // 0は相手が接続を遮断したこと，負の値は接続に不具合が生じたことを意味する．正の値は受信に成功したことを意味する．
+        {
+         	continue;
+        }
+        buff[n] = 0;
 
-        	cout << buff;
+        cout << buff;
             
-        	string sign;
-        	for (int i = 0; i <= 6; i++) {
-            	sign += buff[i];
-        	}
-       		if (sign != "1SAUYKj") {
-            	break;//初めの文字列が1SAUYKjでないとき、他のアプリケーションプロトコルを受信した可能性があるので、closeする。
-        	}
-            
+        string sign;
+        for (int i = 0; i <= 6; i++) {
+            sign += buff[i];
+        }
+       	if (sign != "1SAUYKj") {
+        	//初めの文字列が1SAUYKjでないとき、他のアプリケーションプロトコルを受信した可能性があるので、closeする。
+        }
+        else {
         	cout << "got " << n << " byte, " << buff << endl;
         	for (int i = 7; i < n; ++i) // 受け取った文字列を一つずつ（1Byte毎）に検査する．
         	{
+        		//cout << "buff[" << i << "] = " <<  buff[i] << endl;
            		if (buff[i] == '\"') {
             		escape = !escape;
             	}
@@ -105,10 +109,12 @@ int main(int argc, char *argv[])
                    		if (operation == "get-from") {
                       		state = 1;//次のname1を確認
                       		cout << state << endl;
+                      		cout << operation << endl;
                         }
                     	else if (operation == "send-to") {
                         	state = 1;//次のname1を確認
                         	cout << state << endl;
+                        	cout << operation << endl;
                     	}
                     	else {
                         	cout << operation << "is not difined.\n";
@@ -118,27 +124,38 @@ int main(int argc, char *argv[])
                     	name1 = os;
                     	state = 2;//次のname2を確認
                     	cout << state << endl;
+                    	cout << name1 << endl;
                 	}
                 	else if (state == 2) {
                     	name2 = os;
+                    	cout << name2 << endl;
                     	if (operation == "get-from") {
                     		bool flag = true;
-                    		fsm = "";
-                    		for (int entry = 0; entry < TABLE_SIZE; entry++) {
-                    			if (name1 == chat[entry].to && name2 == chat[entry].from) {
-                    				flag = false;
-                    				fsm += chat[entry].from + "から" + chat[entry].to + "へ\n" + chat[entry].msg + "\n";
+                    		if (name2 == "all") {
+                    			for (int entry = 0; entry < TABLE_SIZE; entry++) {
+                    				if (name1 == chat[entry].to || "all" == chat[entry].to) {
+                    					flag = false;
+                    					fsm += ctime(&chat[entry].time) + chat[entry].from + "から" + chat[entry].to + "へ\n" + chat[entry].msg + "\n\n";
+                    				}
+                    			}
+                    		}
+                    		else {
+                    			for (int entry = 0; entry < TABLE_SIZE; entry++) {
+                    				if (("all" == chat[entry].to || name1 == chat[entry].to) && name2 == chat[entry].from) {
+                    					flag = false;
+                    					fsm += ctime(&chat[entry].time) + chat[entry].from + "から" + chat[entry].to + "へ\n" + chat[entry].msg + "\n\n";
+                    				}
                     			}
                     		}
                     		if (flag) {
-                    			fsm += name2 + "から" + name1 + "へのメッセージはありません\n";
+                    			fsm += name2 + "から" + name1 + "へのメッセージはありません\n\n";
                     		}
                     		state = 0;//命令待機状態へ戻る
                     		break;
                     	}
                     	else if (operation == "send-to") {
                     		state = 3;//次のmsgを確認
-                    		cout << "3\n";
+                    		cout << state << endl;
                     	}
 	         		}
                 	else if (state == 3) {
@@ -146,6 +163,10 @@ int main(int argc, char *argv[])
                     	chat[TABLE_SIZE].from = name1;
                     	chat[TABLE_SIZE].to = name2;
                     	chat[TABLE_SIZE].msg = msg;
+                    	time(&now);
+                    	chat[TABLE_SIZE].time = now;
+                    	cout << "from = " << chat[TABLE_SIZE].from << ", to = " << chat[TABLE_SIZE].to << ", msg = " << chat[TABLE_SIZE].msg << endl;
+                    	fsm = chat[TABLE_SIZE].from + "様。" + chat[TABLE_SIZE].to + "へ以下のメッセージを送信しました。\n" + chat[TABLE_SIZE].msg + "\n";
                     	TABLE_SIZE++;
                     	state = 0; // 命令待機状態へ戻る．
                 	}
@@ -154,7 +175,12 @@ int main(int argc, char *argv[])
             	else {
               		os += buff[i]; // 空白が来るまで文字列へ文字を格納
            		}
+           		//cout << "os = " << os << endl;
            	}
+           	time(&now);
+           	fsm += string("\nTime: ") + ctime(&now);
+           	fsm.pop_back();
+           	fsm += " from 小島の簡易掲示板サーバ\n";
            	write(clnt_socket, fsm.c_str(), fsm.size());
       	}
         close(clnt_socket);

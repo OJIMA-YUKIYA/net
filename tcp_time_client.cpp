@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
     while (1) {
     	string tmp_msg;
     	getline(ifs, tmp_msg);
-    	cin >> tmp_msg;
+    	//cin >> tmp_msg;
     	if (tmp_msg == "q" || tmp_msg == "quit" || tmp_msg == "exit") {
     		if (msg.size() == 0) {
 				break;
@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
 	auto RTT_end = system_clock::now();
 	duration<double> RTT_time = RTT_end - RTT_begin;
 	//cout << "n = read() = " << n << endl;
-	if (n == -1) {
+	if (n <= 0) {
     	cout << "failed to read from a socket\n";
     	close(socketd);
     	return -1;
