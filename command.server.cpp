@@ -71,8 +71,6 @@ int main(int argc, char *argv[])
         string os;
         int state = 0;
         bool escape = false;
-        
-        
         time(&now);
         cout << "state: " << state << ", waiting for messages..\n"; // 現在の状態を確認する
        	int n = read(clnt_socket, buff, BUFF_SIZE - 1);
@@ -81,8 +79,6 @@ int main(int argc, char *argv[])
          	continue;
         }
         buff[n] = 0;
-
-        cout << buff;
             
         string sign;
         for (int i = 0; i <= 6; i++) {
@@ -92,7 +88,7 @@ int main(int argc, char *argv[])
         	//初めの文字列が1SAUYKjでないとき、他のアプリケーションプロトコルを受信した可能性があるので、closeする。
         }
         else {
-        	cout << "got " << n << " byte, " << buff << endl;
+        	cout << "got " << n << " byte, " << buff;
         	for (int i = 7; i < n; ++i) // 受け取った文字列を一つずつ（1Byte毎）に検査する．
         	{
         		//cout << "buff[" << i << "] = " <<  buff[i] << endl;
@@ -108,23 +104,17 @@ int main(int argc, char *argv[])
                   		operation = os;
                    		if (operation == "get-from") {
                       		state = 1;//次のname1を確認
-                      		cout << state << endl;
-                      		cout << operation << endl;
                         }
                     	else if (operation == "send-to") {
                         	state = 1;//次のname1を確認
-                        	cout << state << endl;
-                        	cout << operation << endl;
                     	}
                     	else {
-                        	cout << operation << "is not difined.\n";
+                        	cout << operation << "is not defined.\n";
                     	}
               		}
                 	else if (state == 1) {
                     	name1 = os;
                     	state = 2;//次のname2を確認
-                    	cout << state << endl;
-                    	cout << name1 << endl;
                 	}
                 	else if (state == 2) {
                     	name2 = os;
@@ -144,6 +134,7 @@ int main(int argc, char *argv[])
                     				if (("all" == chat[entry].to || name1 == chat[entry].to) && name2 == chat[entry].from) {
                     					flag = false;
                     					fsm += ctime(&chat[entry].time) + chat[entry].from + "から" + chat[entry].to + "へ\n" + chat[entry].msg + "\n\n";
+
                     				}
                     			}
                     		}
@@ -165,8 +156,8 @@ int main(int argc, char *argv[])
                     	chat[TABLE_SIZE].msg = msg;
                     	time(&now);
                     	chat[TABLE_SIZE].time = now;
-                    	cout << "from = " << chat[TABLE_SIZE].from << ", to = " << chat[TABLE_SIZE].to << ", msg = " << chat[TABLE_SIZE].msg << endl;
-                    	fsm = chat[TABLE_SIZE].from + "様。" + chat[TABLE_SIZE].to + "へ以下のメッセージを送信しました。\n" + chat[TABLE_SIZE].msg + "\n";
+                    	//cout << "from = " << chat[TABLE_SIZE].from << ", to = " << chat[TABLE_SIZE].to << ", msg = " << chat[TABLE_SIZE].msg << endl;
+                    	fsm = chat[TABLE_SIZE].from + "様。" + chat[TABLE_SIZE].to + "さんへ以下のメッセージを送信しました。\n" + chat[TABLE_SIZE].msg + "\n";
                     	TABLE_SIZE++;
                     	state = 0; // 命令待機状態へ戻る．
                 	}
@@ -177,8 +168,7 @@ int main(int argc, char *argv[])
            		}
            		//cout << "os = " << os << endl;
            	}
-           	time(&now);
-           	fsm += string("\nTime: ") + ctime(&now);
+           	fsm += string("Time: ") + ctime(&now);
            	fsm.pop_back();
            	fsm += " from 小島の簡易掲示板サーバ\n";
            	write(clnt_socket, fsm.c_str(), fsm.size());

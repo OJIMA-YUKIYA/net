@@ -9,7 +9,6 @@
 #include <iostream>
 #include <unistd.h> // https://linux.die.net/man/2/read
 #include <string>
-#include <sstream>
 
 
 const int BUFF_SIZE = 256; // 一時記憶の長さ
@@ -79,10 +78,10 @@ int main(int argc, char *argv[])
     	cout << "宛名を入力してください. all を入力した場合は全員になります. >> ";
     	string toname;
     	cin >> toname;
-    	cout << "伝言を入力してください. >> ";
-    	string msg;
+    	cout << "伝言を入力してください.\n";
+    	string msg, tmp_msg;
+    	getline(cin, tmp_msg);
     	while (1) {
-    		string tmp_msg;
     		getline(cin, tmp_msg);
     		if (tmp_msg == "q" || tmp_msg == "quit" || tmp_msg == "exit") {
     			msg.pop_back();
@@ -105,7 +104,6 @@ int main(int argc, char *argv[])
         return -1;
     }
     buff[n] = 0;
-    cout << '\n' <<  buff;
-    
+    cout  <<  "\n" << buff; 
     close(socketd);
 }
